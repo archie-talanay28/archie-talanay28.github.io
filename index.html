@@ -6,12 +6,12 @@
 <title>InsighTE — MyTE Attendance & Plotting Dashboard</title>
 <style>
 :root{
-  --bg:#0b0b10;
-  --panel:#15141c;
-  --panel-2:#1d1b27;
-  --line:#2a2838;
-  --txt:#f3f1f8;
-  --muted:#9a93ad;
+  --bg:#14131c;
+  --panel:#201e2b;
+  --panel-2:#2a2738;
+  --line:#3a3650;
+  --txt:#f5f3fa;
+  --muted:#a9a2bd;
   --purple:#a100ff;
   --purple-2:#7d2ae8;
   --magenta:#d633ff;
@@ -25,12 +25,12 @@
 html,body{background:var(--bg);color:var(--txt);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.45}
 a{color:inherit}
 ::-webkit-scrollbar{width:10px;height:10px}
-::-webkit-scrollbar-thumb{background:#332f44;border-radius:6px}
+::-webkit-scrollbar-thumb{background:#423d5c;border-radius:6px}
 ::-webkit-scrollbar-track{background:transparent}
 
 /* ---------- Layout ---------- */
 .app{display:grid;grid-template-columns:264px 1fr;min-height:100vh}
-.sidebar{background:linear-gradient(180deg,#141320 0%,#0e0d15 100%);border-right:1px solid var(--line);padding:20px 18px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar{background:linear-gradient(180deg,#221f30 0%,#191726 100%);border-right:1px solid var(--line);padding:20px 18px;position:sticky;top:0;height:100vh;overflow-y:auto}
 .main{padding:22px 26px 60px}
 
 /* ---------- Logo ---------- */
@@ -64,7 +64,7 @@ a{color:inherit}
 .home-btn:hover{border-color:var(--purple)}
 
 /* ---------- KPI cards ---------- */
-.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:20px}
 .kpi{background:linear-gradient(160deg,var(--panel) 0%,var(--panel-2) 100%);border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px 14px;position:relative;overflow:hidden}
 .kpi::after{content:"";position:absolute;right:-18px;top:-18px;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle,var(--purple) 0%,transparent 70%);opacity:.16}
 .kpi .label{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:9px}
@@ -72,6 +72,7 @@ a{color:inherit}
 .kpi .unit{font-size:12px;color:var(--muted);font-weight:500;margin-left:3px}
 .kpi.accent .val{color:var(--purple)}
 .kpi.warn .val{color:var(--red)}
+.kpi.amber .val{color:var(--amber)}
 
 /* ---------- Charts ---------- */
 .grid-3{display:grid;grid-template-columns:1.3fr 1.3fr .9fr;gap:14px;margin-bottom:20px}
@@ -95,8 +96,8 @@ a{color:inherit}
 .btn-dl:hover{border-color:var(--purple)}
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead th{text-align:left;color:var(--muted);font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;padding:10px 12px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
-tbody td{padding:11px 12px;border-bottom:1px solid #201e2b}
-tbody tr:hover{background:#191722}
+tbody td{padding:11px 12px;border-bottom:1px solid #2c2940}
+tbody tr:hover{background:#2a2738}
 .num{text-align:right;font-variant-numeric:tabular-nums}
 .expander{width:24px;height:24px;border-radius:7px;border:1px solid var(--line);background:var(--panel-2);color:var(--purple);cursor:pointer;font-size:15px;line-height:1;display:inline-flex;align-items:center;justify-content:center;transition:.15s}
 .expander:hover{border-color:var(--purple)}
@@ -105,7 +106,7 @@ tbody tr:hover{background:#191722}
 .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600}
 .pill.red{background:rgba(255,92,122,.14);color:var(--red)}
 .pill.zero{background:rgba(154,147,173,.12);color:var(--muted)}
-.detail-row td{background:#100f17;padding:0;border-bottom:1px solid var(--line)}
+.detail-row td{background:#1a1826;padding:0;border-bottom:1px solid var(--line)}
 .detail-inner{padding:18px 22px}
 
 /* ---------- Calendar ---------- */
@@ -116,7 +117,7 @@ tbody tr:hover{background:#191722}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .cal .dow{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;text-align:center;padding:4px 0}
 .cell{min-height:88px;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:6px 7px 6px 9px;font-size:11px;position:relative;overflow:hidden}
-.cell.empty{background:transparent;border:1px dashed #201e2b}
+.cell.empty{background:transparent;border:1px dashed #322e46}
 .cell .dnum{font-weight:700;color:var(--muted);font-size:11px}
 .cell .st{display:inline-block;margin-top:3px;padding:1px 6px;border-radius:5px;font-size:10px;font-weight:700}
 .cell .chg{margin-top:4px;color:#c9c3d6;font-size:10px;line-height:1.3;max-height:34px;overflow:hidden}
@@ -155,7 +156,7 @@ tbody tr:hover{background:#191722}
 .modal h4{font-size:16px;font-weight:700;margin-bottom:4px}
 .modal p{color:var(--muted);font-size:12px;margin-bottom:18px}
 .dl-opt{width:100%;text-align:left;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:13px 14px;margin-bottom:10px;color:var(--txt);font-size:13px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
-.dl-opt:hover{border-color:var(--purple);background:#211f2c}
+.dl-opt:hover{border-color:var(--purple);background:#322e44}
 .dl-opt small{color:var(--muted);font-weight:400}
 .modal .close{margin-top:6px;background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;width:100%}
 .modal .close:hover{color:var(--txt)}
@@ -193,7 +194,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .ms.open .ms-toggle::after{transform:translateY(-30%) rotate(-135deg)}
 .ms-toggle.has-sel{color:var(--txt)}
 .ms-count{display:inline-block;background:var(--purple);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 7px;margin-left:4px;vertical-align:1px}
-.ms-panel{display:none;position:absolute;z-index:30;top:calc(100% + 4px);left:0;right:0;background:#1b1925;border:1px solid var(--line);border-radius:10px;box-shadow:0 16px 40px -12px #000;overflow:hidden}
+.ms-panel{display:none;position:absolute;z-index:30;top:calc(100% + 4px);left:0;right:0;background:#272335;border:1px solid var(--line);border-radius:10px;box-shadow:0 16px 40px -12px #000;overflow:hidden}
 .ms.open .ms-panel{display:block}
 .ms-search{width:100%;background:var(--bg);border:none;border-bottom:1px solid var(--line);color:var(--txt);padding:9px 11px;font-size:12px}
 .ms-search:focus{outline:none}
@@ -202,7 +203,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .ms-actions button:hover{text-decoration:underline}
 .ms-list{max-height:210px;overflow-y:auto;padding:4px}
 .ms-item{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:7px;cursor:pointer;font-size:12px}
-.ms-item:hover{background:#241f31}
+.ms-item:hover{background:#332e46}
 .ms-item .box{width:15px;height:15px;border:1.5px solid #4a4660;border-radius:4px;flex:0 0 auto;position:relative}
 .ms-item.sel .box{background:var(--purple);border-color:var(--purple)}
 .ms-item.sel .box::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(45deg)}
@@ -412,7 +413,7 @@ async function loadFact(){
   return FACT;
 }
 
-const P = {purple:'#a100ff',purple2:'#7d2ae8',magenta:'#d633ff',green:'#3ddc97',red:'#ff5c7a',amber:'#ffc24b',blue:'#4db5ff',muted:'#9a93ad',line:'#2a2838',txt:'#f3f1f8'};
+const P = {purple:'#a100ff',purple2:'#7d2ae8',magenta:'#d633ff',green:'#3ddc97',red:'#ff5c7a',amber:'#ffc24b',blue:'#4db5ff',muted:'#a9a2bd',line:'#3a3650',txt:'#f5f3fa'};
 const fmtNum = n => Number(n).toLocaleString(undefined,{maximumFractionDigits:1});
 const fmtInt = n => Number(n).toLocaleString();
 const money = n => '$'+Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -632,6 +633,7 @@ function renderKPIs(){
     {label:'Total Invalid Count', val:fmtInt(k.total_invalid_count), unit:'', cls:'warn'},
     {label:'Total Invalid Hours', val:fmtNum(k.total_invalid_hours), unit:'hrs', cls:'warn'},
     {label:'Total Leave Hours', val:fmtNum(k.total_leave_hours), unit:'hrs', cls:''},
+    {label:'Total Tardy Hours', val:fmtNum(k.total_tardy_hours), unit:'hrs', cls:'amber'},
   ];
   document.getElementById('kpi-row').innerHTML = cards.map(c=>`
     <div class="kpi ${c.cls}">
@@ -670,7 +672,7 @@ function renderLOBChart(){
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmtNum(c.parsed.y)} hrs`}}},
       scales:{x:{stacked:true,grid:{display:false},border:{display:false}},
-              y:{stacked:true,grid:{color:'#1f1d29'},border:{display:false},ticks:{callback:v=>v>=1000?(v/1000)+'k':v}}}}});
+              y:{stacked:true,grid:{color:'#322e46'},border:{display:false},ticks:{callback:v=>v>=1000?(v/1000)+'k':v}}}}});
   document.getElementById('lobLegend').innerHTML = lobs.map((l,i)=>`<span><i style="background:${colors[i]}"></i>${l}</span>`).join('');
 }
 function renderPPAChart(){
@@ -706,7 +708,7 @@ function renderPPAChart(){
       layout:{padding:{top:22}},
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${fmtNum(c.parsed.y)} PPA hrs`}}},
       scales:{x:{grid:{display:false},border:{display:false}},
-              y:{grid:{color:'#1f1d29'},border:{display:false},ticks:{callback:v=>v>=1000?(v/1000)+'k':v}}}},
+              y:{grid:{color:'#322e46'},border:{display:false},ticks:{callback:v=>v>=1000?(v/1000)+'k':v}}}},
     plugins:[ppaLabels]});
 }
 function renderDonut(){
@@ -714,7 +716,7 @@ function renderDonut(){
   const ctx=document.getElementById('donutChart');
   if(donutChart) donutChart.destroy();
   donutChart=new Chart(ctx,{type:'doughnut',data:{labels:['PPA Recovered (Unpaid)','PPA Returned (Paid Leave)'],
-    datasets:[{data:[d.recovered,d.returned],backgroundColor:[P.purple,P.blue],borderColor:'#15141c',borderWidth:3,hoverOffset:6}]},
+    datasets:[{data:[d.recovered,d.returned],backgroundColor:[P.purple,P.blue],borderColor:'#201e2b',borderWidth:3,hoverOffset:6}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'70%',
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmtNum(c.parsed)} hrs (${total?(c.parsed/total*100).toFixed(1):0}%)`}}}}});
   document.getElementById('donutTotal').textContent = fmtNum(total);
