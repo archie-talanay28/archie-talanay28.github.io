@@ -1533,15 +1533,18 @@ function applyLeanFilter(){
       if (idx>=0) set.add(idx);
     });
   }
+  pick('MONTH', ['February-2026','March-2026','April-2026','May-2026','June-2026']);  // 5 months, excl. July
+  pick('ATTENDANCE STATUS', ['HD','NCNS','OFF','SL','UA','VL']);
   pick('ACN STATUS', ['Active']);
   pick('PROJECT ROLE AGENT', ['Voice Agent', 'Voice Agent - PT', 'Voice Agent - PPT']);
+  pick('DATA STATUS', ['—']);   // Complete (WFM + MyTE)
   // numeric filters
-  S.numFilters['ATTP']   = {op:'lte', val:25};   // <= 25%
+  S.numFilters['ATTP']   = {op:'gte', val:25};   // >= 25%
   S.numFilters['RECOV2'] = {op:'gte', val:2};    // >= 2 hrs
   // reflect in UI
   FILTER_CONFIG.forEach(cfg=>{ updateMselLabel(cfg.dim); renderMselOpts(cfg); });
   const ai=document.getElementById('numin-ATTP'); if(ai) ai.value='25';
-  const ao=document.getElementById('numop-ATTP'); if(ao) ao.value='lte';
+  const ao=document.getElementById('numop-ATTP'); if(ao) ao.value='gte';
   const ri=document.getElementById('numin-RECOV2'); if(ri) ri.value='2';
   const ro=document.getElementById('numop-RECOV2'); if(ro) ro.value='gte';
   S.search=''; document.getElementById('agent-search').value='';
