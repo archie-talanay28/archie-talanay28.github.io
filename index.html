@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -157,7 +158,7 @@ input,select{font-family:inherit}
 
 /* ============ CHARTS ============ */
 .chart-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:22px}
-.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px}
+.chart-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
 .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:17px 19px;transition:background .3s,border-color .3s}
 .panel h3{font-size:14px;font-weight:700;margin-bottom:2px}
 .panel .p-sub{font-size:11px;color:var(--txt-mut);margin-bottom:14px}
@@ -166,8 +167,8 @@ input,select{font-family:inherit}
 .legend .li{display:inline-flex;align-items:center;gap:5px}
 .legend .dot{width:9px;height:9px;border-radius:2px}
 .donut-center{position:absolute;top:44%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
-.donut-center .dc-val{font-size:26px;font-weight:800}
-.donut-center .dc-lab{font-size:9.5px;letter-spacing:1px;color:var(--txt-mut);font-weight:700}
+.donut-center .dc-val{font-size:21px;font-weight:800}
+.donut-center .dc-lab{font-size:8px;letter-spacing:1px;color:var(--txt-mut);font-weight:700}
 
 /* ============ AGENT TABLE ============ */
 .agent-panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px}
@@ -377,6 +378,9 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 .menu-toggle{display:none;align-items:center;justify-content:center;width:38px;height:38px;border-radius:9px;background:var(--panel);border:1px solid var(--border2)}
 .menu-toggle svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
 
+@media(max-width:1500px){
+  .chart-grid{grid-template-columns:repeat(2,1fr)}
+}
 @media(max-width:1100px){
   .kpi-row{grid-template-columns:repeat(3,1fr)}
   .chart-row,.chart-grid,.top-row,.fin-grid,.about-cards,.fin-hero,.top-lists{grid-template-columns:1fr 1fr}
@@ -393,6 +397,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 </style>
 </head>
 <body>
+<script id="baked-data" type="application/octet-stream"></script>
 
 <!-- ============ GATE ============ -->
 <div class="gate" id="gate">
@@ -459,6 +464,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
         <span class="role-badge" id="role-badge">—</span>
         <button class="pill-btn" id="upload-top" onclick="triggerUpload()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>Upload data</button>
         <button class="pill-btn" id="uploadlink-top" onclick="openUploadLinkModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Upload link</button>
+        <button class="pill-btn" id="export-top" onclick="exportShareable()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7"/><path d="M16 6l-4-4-4 4M12 2v13"/></svg>Export shareable</button>
         <button class="pill-btn" onclick="exitToGate()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>Exit</button>
         <div class="theme-wrap">
           <button class="pill-btn" onclick="document.getElementById('theme-menu').classList.toggle('open')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>Theme</button>
@@ -673,8 +679,67 @@ function isAdmin(){ return ROLE==='super'||ROLE==='admin'; }
 function applyRoleVisibility(){
   document.getElementById('upload-top').classList.toggle('hidden',!isAdmin());
   document.getElementById('uploadlink-top').classList.toggle('hidden',!isAdmin());
+  document.getElementById('export-top').classList.toggle('hidden',!isAdmin());
   document.getElementById('empty-upload-btn').classList.toggle('hidden',!isAdmin());
   document.getElementById('nav-admin').classList.toggle('hidden',ROLE!=='super'); // only super manages admins
+}
+
+/* ============================================================
+   BAKED-DATA (share on GitHub etc.): compress MODEL into the HTML itself
+   ============================================================ */
+// base64 <-> Uint8Array
+function u8ToB64(u8){ let s=''; const CH=0x8000; for(let i=0;i<u8.length;i+=CH){ s+=String.fromCharCode.apply(null,u8.subarray(i,i+CH)); } return btoa(s); }
+function b64ToU8(b64){ const bin=atob(b64); const u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i); return u8; }
+async function gzipString(str){
+  if(typeof CompressionStream!=='undefined'){
+    const cs=new CompressionStream('gzip');
+    const blob=await new Response(new Blob([str]).stream().pipeThrough(cs)).blob();
+    return new Uint8Array(await blob.arrayBuffer());
+  }
+  return new TextEncoder().encode(str); // fallback: store uncompressed
+}
+async function gunzipToString(u8){
+  // gzip magic bytes 0x1f 0x8b -> compressed; else treat as raw UTF-8
+  if(u8.length>=2 && u8[0]===0x1f && u8[1]===0x8b && typeof DecompressionStream!=='undefined'){
+    const ds=new DecompressionStream('gzip');
+    const blob=await new Response(new Blob([u8]).stream().pipeThrough(ds)).blob();
+    return await blob.text();
+  }
+  return new TextDecoder().decode(u8);
+}
+async function loadBakedData(){
+  const tag=document.getElementById('baked-data');
+  const raw=tag?tag.textContent.trim():'';
+  if(!raw) return null;
+  const json=await gunzipToString(b64ToU8(raw));
+  return JSON.parse(json);
+}
+async function exportShareable(){
+  if(!isAdmin()){ toast('Only admins can export','err'); return; }
+  if(!MODEL){ toast('Upload data first','err'); return; }
+  showLoader('Building shareable file…','Compressing data and packaging HTML');
+  try{
+    // payload = full model + the active download link (so Download File works on the shared copy)
+    const payload={...MODEL}; payload._downloadLink=DOWNLOAD_LINK||'';
+    const b64=u8ToB64(await gzipString(JSON.stringify(payload)));
+    // clone current document, inject data, strip transient state
+    const doc=document.documentElement.cloneNode(true);
+    const tag=doc.querySelector('#baked-data'); tag.textContent=b64;
+    // reset UI to a clean landing state in the exported copy
+    const appEl=doc.querySelector('#app'); if(appEl)appEl.classList.remove('on');
+    const gateEl=doc.querySelector('#gate'); if(gateEl)gateEl.classList.remove('hidden');
+    // clear any rendered chart/table markup so it regenerates fresh on open
+    ['chart-lob','chart-rec','chart-ppa','chart-donut','agent-tbody','agent-thead'].forEach(id=>{ const el=doc.querySelector('#'+id); if(el)el.innerHTML=''; });
+    const html='<!DOCTYPE html>\n'+doc.outerHTML;
+    const blob=new Blob([html],{type:'text/html'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url;
+    a.download='InsighTE_Dashboard_shared.html'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
+    hideLoader();
+    const mb=(blob.size/1048576).toFixed(1);
+    toast('Shareable file ready ('+mb+' MB) — upload it to GitHub','ok');
+  }catch(err){ console.error(err); hideLoader(); toast('Export failed: '+err.message,'err'); }
 }
 
 /* ============================================================
@@ -682,6 +747,12 @@ function applyRoleVisibility(){
    ============================================================ */
 async function bootData(){
   await loadDownloadLink();
+  // 1) baked-in data (shared/exported copy) takes priority — works on any URL (e.g. GitHub)
+  try{
+    const baked=await loadBakedData();
+    if(baked && baked.rows){ MODEL=baked; if(baked._downloadLink)DOWNLOAD_LINK=baked._downloadLink; onModelReady(true); return; }
+  }catch(e){ console.warn('baked-data load failed',e); }
+  // 2) otherwise fall back to this device's IndexedDB
   try{ const saved=await idbGet(STORE_DATA,KEY);
     if(saved && saved.rows){ MODEL=saved; onModelReady(true); return; } }catch(e){ console.warn('load failed',e); }
   if(isAdmin()) setEmpty('Upload your data','Drop your Power BI–ready Excel file here, or click to browse',true);
@@ -946,25 +1017,26 @@ function niceMax(v){ if(v<=0)return 10; const p=Math.pow(10,Math.floor(Math.log1
 function fmtK(v){ return v>=1000?(v/1000).toFixed(v%1000?1:0)+'k':Math.round(v); }
 function emptyChart(){ return `<div style="height:230px;display:flex;align-items:center;justify-content:center;color:var(--txt-mut);font-size:12px">No data for current filters</div>`; }
 
+const BAR_W=22; // fixed bar width across every chart
 function renderLOBChart(){
   const byMonth={},lobTot={};
   for(const r of FILTERED){ if(r.isInvalid!==1)continue; const lob=r.lob===''?'(none)':r.lob; (byMonth[r.month]=byMonth[r.month]||{})[lob]=((byMonth[r.month]||{})[lob]||0)+1; lobTot[lob]=(lobTot[lob]||0)+1; }
   const months=MODEL.monthsOrder.filter(m=>byMonth[m]);
   const lobArr=Object.keys(lobTot).sort((a,b)=>lobTot[b]-lobTot[a]); // biggest first = darkest
   assignLobColors(lobArr);
-  const W=460,H=320,padL=40,padR=14,padT=22,padB=36,plotW=W-padL-padR,plotH=H-padT-padB;
+  const W=340,H=210,padL=36,padR=12,padT=18,padB=26,plotW=W-padL-padR,plotH=H-padT-padB;
   let maxTot=0; months.forEach(m=>{ const t=Object.values(byMonth[m]).reduce((a,b)=>a+b,0); if(t>maxTot)maxTot=t; }); maxTot=niceMax(maxTot);
-  const gap=months.length?plotW/months.length:plotW, bw=Math.min(58,gap*0.62);
+  const slot=months.length?plotW/months.length:plotW;
   let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet">`;
   const grid=cssVar('--border');
-  for(let i=0;i<=4;i++){ const y=padT+plotH-(plotH*i/4); svg+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="${grid}" opacity=".6"/><text x="${padL-8}" y="${y+3}" text-anchor="end" font-size="10" fill="${cssVar('--txt-mut')}">${fmtK(maxTot*i/4)}</text>`; }
-  months.forEach((m,mi)=>{ const cx=padL+gap*mi+gap/2; let acc=0, tot=0;
+  for(let i=0;i<=4;i++){ const y=padT+plotH-(plotH*i/4); svg+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="${grid}" opacity=".6"/><text x="${padL-5}" y="${y+3}" text-anchor="end" font-size="9" fill="${cssVar('--txt-mut')}">${fmtK(maxTot*i/4)}</text>`; }
+  months.forEach((m,mi)=>{ const cx=padL+slot*mi+slot/2; let acc=0, tot=0;
     lobArr.forEach(lob=>{ const v=(byMonth[m]||{})[lob]||0; if(v<=0)return; const h=plotH*v/maxTot, y=padT+plotH-acc-h;
-      svg+=`<rect x="${cx-bw/2}" y="${y}" width="${bw}" height="${Math.max(h,0)}" fill="${lobColor(lob)}" rx="2"><title>${esc(m)} · ${esc(lob)}: ${v}</title></rect>`;
-      if(h>=15) svg+=`<text x="${cx}" y="${y+h/2+4}" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${v}</text>`;
+      svg+=`<rect x="${cx-BAR_W/2}" y="${y}" width="${BAR_W}" height="${Math.max(h,0)}" fill="${lobColor(lob)}" rx="2"><title>${esc(m)} · ${esc(lob)}: ${v}</title></rect>`;
+      if(h>=13) svg+=`<text x="${cx}" y="${y+h/2+3}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff">${v}</text>`;
       acc+=h; tot+=v; });
-    if(tot>0) svg+=`<text x="${cx}" y="${padT+plotH-acc-6}" text-anchor="middle" font-size="11" font-weight="800" fill="${cssVar('--txt')}">${tot}</text>`;
-    svg+=`<text x="${cx}" y="${H-padB+18}" text-anchor="middle" font-size="11" fill="${cssVar('--txt-dim')}">${monthShort(m)}</text>`;
+    if(tot>0) svg+=`<text x="${cx}" y="${padT+plotH-acc-4}" text-anchor="middle" font-size="8.5" font-weight="800" fill="${cssVar('--txt')}">${tot}</text>`;
+    svg+=`<text x="${cx}" y="${H-padB+15}" text-anchor="middle" font-size="9.5" fill="${cssVar('--txt-dim')}">${monthShort(m)}</text>`;
   });
   svg+=`</svg>`;
   document.getElementById('chart-lob').innerHTML=months.length?svg:emptyChart();
@@ -973,20 +1045,19 @@ function renderLOBChart(){
 
 /* shared grouped-bar renderer for the two paired charts */
 function renderGroupedBars(targetId,legendId,series,months,labels){
-  const W=460,H=320,padL=44,padR=14,padT=24,padB=36,plotW=W-padL-padR,plotH=H-padT-padB;
+  const W=340,H=210,padL=38,padR=12,padT=18,padB=26,plotW=W-padL-padR,plotH=H-padT-padB;
   let maxV=0; months.forEach(m=>{ series.forEach(s=>{ maxV=Math.max(maxV,s.data[m]||0); }); }); maxV=niceMax(maxV);
-  const gap=months.length?plotW/months.length:plotW;
-  const bw=Math.min(26,(gap*0.62)/series.length);
+  const slot=months.length?plotW/months.length:plotW;
   let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet">`;
   const grid=cssVar('--border');
-  for(let i=0;i<=4;i++){ const y=padT+plotH-(plotH*i/4); svg+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="${grid}" opacity=".6"/><text x="${padL-8}" y="${y+3}" text-anchor="end" font-size="10" fill="${cssVar('--txt-mut')}">${fmtK(maxV*i/4)}</text>`; }
-  months.forEach((m,mi)=>{ const cx=padL+gap*mi+gap/2;
-    const totalW=series.length*bw+(series.length-1)*3, start=cx-totalW/2;
-    series.forEach((s,si)=>{ const v=s.data[m]||0; const h=plotH*v/maxV; const x=start+si*(bw+3); const y=padT+plotH-h;
-      svg+=`<rect x="${x}" y="${y}" width="${bw}" height="${Math.max(h,0)}" fill="${s.color}" rx="2"><title>${esc(m)} · ${esc(s.label)}: ${fmt(v)}</title></rect>`;
-      if(v>0) svg+=`<text x="${x+bw/2}" y="${y-5}" text-anchor="middle" font-size="9.5" font-weight="700" fill="${cssVar('--txt')}">${fmt(v)}</text>`;
+  for(let i=0;i<=4;i++){ const y=padT+plotH-(plotH*i/4); svg+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="${grid}" opacity=".6"/><text x="${padL-5}" y="${y+3}" text-anchor="end" font-size="9" fill="${cssVar('--txt-mut')}">${fmtK(maxV*i/4)}</text>`; }
+  months.forEach((m,mi)=>{ const cx=padL+slot*mi+slot/2;
+    series.forEach((s,si)=>{ const v=s.data[m]||0; const h=plotH*v/maxV;
+      const x=(si===0)?(cx-BAR_W-1.5):(cx+1.5); const y=padT+plotH-h;
+      svg+=`<rect x="${x}" y="${y}" width="${BAR_W}" height="${Math.max(h,0)}" fill="${s.color}" rx="2"><title>${esc(m)} · ${esc(s.label)}: ${fmt(v)}</title></rect>`;
+      if(v>0) svg+=`<text x="${x+BAR_W/2}" y="${y-4}" text-anchor="middle" font-size="8" font-weight="700" fill="${cssVar('--txt')}">${fmt(v)}</text>`;
     });
-    svg+=`<text x="${cx}" y="${H-padB+18}" text-anchor="middle" font-size="11" fill="${cssVar('--txt-dim')}">${monthShort(m)}</text>`;
+    svg+=`<text x="${cx}" y="${H-padB+15}" text-anchor="middle" font-size="9.5" fill="${cssVar('--txt-dim')}">${monthShort(m)}</text>`;
   });
   svg+=`</svg>`;
   document.getElementById(targetId).innerHTML=months.length?svg:emptyChart();
@@ -1030,7 +1101,7 @@ function renderDonut(){
   if(!DONUT_STATIC) computeDonutStatic();
   const unpaid=DONUT_STATIC.unpaid, paid=DONUT_STATIC.paid;
   const total=unpaid+paid; document.getElementById('donut-val').textContent=fmt(total);
-  const W=210,H=210,cx=W/2,cy=H/2,rO=88,rI=54;
+  const W=186,H=186,cx=W/2,cy=H/2,rO=78,rI=48;
   const cUnp=PAIR_PRIMARY,cPaid=PAIR_SECONDARY;
   let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet">`;
   if(total<=0){ svg+=`<circle cx="${cx}" cy="${cy}" r="${(rO+rI)/2}" fill="none" stroke="${cssVar('--border')}" stroke-width="${rO-rI}"/>`; }
@@ -1041,7 +1112,7 @@ function renderDonut(){
       const large=(a1-a0)>Math.PI?1:0;
       svg+=`<path d="M${x0} ${y0} A${rO} ${rO} 0 ${large} 1 ${x1} ${y1} L${xi1} ${yi1} A${rI} ${rI} 0 ${large} 0 ${xi0} ${yi0} Z" fill="${s.c}"><title>${s.l}: ${fmt(s.v)}</title></path>`;
       const mid=(a0+a1)/2, lr=(rO+rI)/2, lx=cx+lr*Math.cos(mid), ly=cy+lr*Math.sin(mid);
-      if(s.v/total>0.06) svg+=`<text x="${lx}" y="${ly+3}" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">${fmt(s.v)}</text>`;
+      if(s.v/total>0.06) svg+=`<text x="${lx}" y="${ly+3}" text-anchor="middle" font-size="9.5" font-weight="800" fill="#fff">${fmt(s.v)}</text>`;
       a0=a1; }); }
   svg+=`</svg>`;
   document.getElementById('chart-donut').innerHTML=svg;
